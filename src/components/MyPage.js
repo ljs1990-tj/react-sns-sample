@@ -1,7 +1,38 @@
-import React from 'react';
-import { Container, Typography, Box, Avatar, Grid, Paper } from '@mui/material';
+import React, { useEffect, useState } from 'react';
+import { Container, Typography, Box, Avatar, Grid, Paper, Dialog, DialogTitle, DialogContent, Button, DialogActions } from '@mui/material';
+import { jwtDecode } from 'jwt-decode';
 
 function MyPage() {
+  let [info, setInfo] = useState({userName : "", eamil : "", intro : "", profileImg : ""});
+  let [open, setOpen] = useState(false);
+  let [imgUrl, setImgUrl] = useState();
+  const token = localStorage.getItem("token"); 
+  const fnUserInfo = ()=>{
+    if(!token){
+      // 다시 로그인 페이지로 이동
+      // navigate("/");
+    }
+    const sessionUser = jwtDecode(token);
+    fetch("http://localhost:3005/member/"+sessionUser.sessionEmail)
+    .then(res => res.json())
+    .then(data => {
+      setInfo(data.info);
+    });
+  }
+
+  const selectImg = (e)=>{
+    const file = e.target.files[0];
+    if(file) {
+      const imgUrl = URL.createObjectURL(file);
+      setImgUrl(imgUrl);
+    }
+  }
+
+
+  useEffect(()=>{
+    fnUserInfo();
+  }, [])
+
   return (
     <Container maxWidth="md">
       <Box
@@ -19,10 +50,11 @@ function MyPage() {
               alt="프로필 이미지"
               src="https://images.unsplash.com/photo-1551963831-b3b1ca40c98e" // 프로필 이미지 경로
               sx={{ width: 100, height: 100, marginBottom: 2 }}
+              onClick={()=>{setOpen(!open)}}
             />
-            <Typography variant="h5">홍길동</Typography>
+            <Typography variant="h5">{info.userName}</Typography>
             <Typography variant="body2" color="text.secondary">
-              @honggildong
+              {info.email}
             </Typography>
           </Box>
           <Grid container spacing={2} sx={{ marginTop: 2 }}>
@@ -42,10 +74,38 @@ function MyPage() {
           <Box sx={{ marginTop: 3 }}>
             <Typography variant="h6">내 소개</Typography>
             <Typography variant="body1">
-              안녕하세요! SNS를 통해 친구들과 소통하고 있습니다. 사진과 일상을 공유하는 것을 좋아해요.
+              {info.intro}
             </Typography>
           </Box>
         </Paper>
+        <Dialog open={open}>
+          <DialogTitle>이미지 수정!</DialogTitle>
+          <DialogContent>
+            <label>
+              <input onChange={selectImg} type="file" accept="image/*" style={{display : "none"}}></input>
+              <Button variant='contained' component="span">이미지 선택</Button>
+              {!imgUrl ? " 선택된 파일 없음" : " 이미지 선택 됨"}
+            </label>
+          </DialogContent>
+          {imgUrl && (
+            <Box mt={2}>
+              <Typography variant='h5' sx={{marginLeft : 3}}>미리보기</Typography>
+              <Avatar
+                alt="미리보기"
+                src={imgUrl}
+                sx={{ width: 100, height: 100, marginTop: 1, marginLeft : 3 }}
+                onClick={()=>{setOpen(!open)}}
+              />
+            </Box>
+          )}
+          <DialogActions>
+            <Button variant='contained'>저장</Button>
+            <Button variant='outlined' onClick={()=>{
+              setOpen(false);
+              setImgUrl(null);
+            }}>취소</Button>
+          </DialogActions>
+        </Dialog>
       </Box>
     </Container>
   );

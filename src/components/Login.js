@@ -23,21 +23,21 @@ function Login(){
   const navigate = useNavigate();
   const handleLogin = () => {
 
-    fetch("http://localhost:3005/login",{
+    fetch("http://localhost:3005/member",{
       method : "POST",
       headers : {
         "Content-type" : "application/json"
       },
-      body : JSON.stringify({userId, pwd : password})
+      body : JSON.stringify({email : userId, pwd : password})
     })
     .then(res => res.json())
     .then(data => {
       console.log(data);
       if (data.success) {
-        setDialogMessage(data.message);
-        setDialogOpen(true);
+        // setDialogMessage(data.message);
+        // setDialogOpen(true);
         localStorage.setItem("token", data.token);
-        navigate("/");
+        navigate("/feed");
       } else {
         setDialogMessage(data.message);
         setDialogOpen(true);

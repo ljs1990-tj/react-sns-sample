@@ -21,7 +21,7 @@ function Menu() {
         SNS 메뉴
       </Typography>
       <List>
-        <ListItem button component={Link} to="/">
+        <ListItem button component={Link} to="/feed">
           <ListItemIcon>
             <Home />
           </ListItemIcon>
