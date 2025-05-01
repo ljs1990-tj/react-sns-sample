@@ -6,7 +6,9 @@ function MyPage() {
   let [info, setInfo] = useState({userName : "", eamil : "", intro : "", profileImg : ""});
   let [open, setOpen] = useState(false);
   let [imgUrl, setImgUrl] = useState();
+  const [insertFile, setFile] = useState();
   const token = localStorage.getItem("token"); 
+  
   const fnUserInfo = ()=>{
     if(!token){
       // 다시 로그인 페이지로 이동
@@ -25,9 +27,28 @@ function MyPage() {
     if(file) {
       const imgUrl = URL.createObjectURL(file);
       setImgUrl(imgUrl);
+      setFile(file);
     }
   }
 
+  const fnSaveImg = ()=>{
+    const formData = new FormData();
+    formData.append("file", insertFile); 
+    formData.append("email", info.email);
+    fetch("http://localhost:3005/member/upload", {
+      method: "POST",
+      body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+      console.log(data);
+      alert("저장 됐나?");
+      setOpen(false);
+    })
+    .catch(err => {
+      console.error(err);
+    });
+  }
 
   useEffect(()=>{
     fnUserInfo();
@@ -48,7 +69,7 @@ function MyPage() {
           <Box display="flex" flexDirection="column" alignItems="center" sx={{ marginBottom: 3 }}>
             <Avatar
               alt="프로필 이미지"
-              src="https://images.unsplash.com/photo-1551963831-b3b1ca40c98e" // 프로필 이미지 경로
+              src={info.profileImg ? "http://localhost:3005/"+info.profileImg : "https://images.unsplash.com/photo-1551963831-b3b1ca40c98e"} // 프로필 이미지 경로
               sx={{ width: 100, height: 100, marginBottom: 2 }}
               onClick={()=>{setOpen(!open)}}
             />
@@ -99,7 +120,7 @@ function MyPage() {
             </Box>
           )}
           <DialogActions>
-            <Button variant='contained'>저장</Button>
+            <Button variant='contained' onClick={fnSaveImg}>저장</Button>
             <Button variant='outlined' onClick={()=>{
               setOpen(false);
               setImgUrl(null);
