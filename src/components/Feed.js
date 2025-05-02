@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Grid2,
   AppBar,
@@ -21,33 +21,38 @@ import {
   ListItemText,
   ListItemAvatar,
   Avatar,
+  ImageList,
+  ImageListItem 
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
-
-const mockFeeds = [
-  {
-    id: 1,
-    title: '게시물 1',
-    description: '이것은 게시물 1의 설명입니다.',
-    image: 'https://images.unsplash.com/photo-1551963831-b3b1ca40c98e',
-  },
-  {
-    id: 2,
-    title: '게시물 2',
-    description: '이것은 게시물 2의 설명입니다.',
-    image: 'https://images.unsplash.com/photo-1521747116042-5a810fda9664',
-  },
-  // 추가 피드 데이터
-];
 
 function Feed() {
   const [open, setOpen] = useState(false);
   const [selectedFeed, setSelectedFeed] = useState(null);
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState('');
+  const [feedList, setFeedList] = useState();
+  const [imgList, setImgList] = useState();
+
+  const fnFeedList = ()=>{
+    fetch("http://localhost:3005/sns-feed")
+      .then(res => res.json())
+      .then(data => setFeedList(data.list));
+  }
+
+  useEffect(()=>{
+    fnFeedList();
+  }, [])
 
   const handleClickOpen = (feed) => {
-    setSelectedFeed(feed);
+    fetch("http://localhost:3005/sns-feed/"+feed.id)
+      .then(res => res.json())
+      .then(data => {
+        setSelectedFeed(data.feed);
+        setImgList(data.imgList);
+      })
+ 
+
     setOpen(true);
     setComments([
       { id: 'user1', text: '멋진 사진이에요!' },
@@ -80,13 +85,13 @@ function Feed() {
 
       <Box mt={4}>
         <Grid2 container spacing={3}>
-          {mockFeeds.map((feed) => (
+          {feedList && feedList.map((feed) => (
             <Grid2 xs={12} sm={6} md={4} key={feed.id}>
               <Card>
                 <CardMedia
                   component="img"
                   height="200"
-                  image={feed.image}
+                  image={"http://localhost:3005/" + feed.imgPath + feed.imgName}
                   alt={feed.title}
                   onClick={() => handleClickOpen(feed)}
                   style={{ cursor: 'pointer' }}
@@ -117,13 +122,19 @@ function Feed() {
         </DialogTitle>
         <DialogContent sx={{ display: 'flex' }}>
           <Box sx={{ flex: 1 }}>
-            <Typography variant="body1">{selectedFeed?.description}</Typography>
-            {selectedFeed?.image && (
-              <img
-                src={selectedFeed.image}
-                alt={selectedFeed.title}
-                style={{ width: '100%', marginTop: '10px' }}
-              />
+            <Typography variant="body1">{selectedFeed?.content}</Typography>
+            {imgList && (
+              <ImageList sx={{ width: 700, height: 500 }} cols={3} rowHeight={164}>
+                {imgList.map((item) => (
+                  <ImageListItem key={item.img}>
+                    <img
+                      src={`${"http://localhost:3005/"+item.imgPath+item.imgName}?w=164&h=164&fit=crop&auto=format`}
+                      alt={item.imgName}
+                      loading="lazy"
+                    />
+                  </ImageListItem>
+                ))}
+              </ImageList>
             )}
           </Box>
 

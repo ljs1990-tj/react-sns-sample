@@ -42,8 +42,9 @@ function MyPage() {
     .then(res => res.json())
     .then(data => {
       console.log(data);
-      alert("저장 됐나?");
+      alert("저장 됐다");
       setOpen(false);
+      fnUserInfo();
     })
     .catch(err => {
       console.error(err);
